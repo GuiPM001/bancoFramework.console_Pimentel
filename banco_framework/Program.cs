@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using Application;
+using Domain;
 using Domain.Model;
 
 internal class Program
@@ -9,45 +10,59 @@ internal class Program
         Console.WriteLine("Seja bem vindo ao banco Framework");
         Console.WriteLine("Por favor, identifique-se");
         Console.WriteLine("");
-        var pessoa = Identificacao();
-        ExibirMenu(pessoa);
+        var cliente = Identificacao();
+        ExibirMenu(cliente);
     }
 
-    static Pessoa Identificacao()
+    static Cliente Identificacao()
     {
-        var pessoa = new Pessoa();
+        var cliente = new Cliente();
 
         Console.WriteLine("Seu número de identificação:");
-        pessoa.Id = int.Parse(Console.ReadLine());
+        cliente.Id = int.Parse(Console.ReadLine());
 
         Console.WriteLine("Seu nome:");
-        pessoa.Nome = Console.ReadLine();
+        cliente.Nome = Console.ReadLine();
 
         Console.WriteLine("Seu CPF:");
-        pessoa.Cpf = Console.ReadLine();
+        cliente.Cpf = Console.ReadLine();
+
+        Console.WriteLine("Seu saldo:");
+        cliente.Saldo = float.Parse(Console.ReadLine());
         Console.Clear();
-        
-        return pessoa;
+
+        return cliente;
     }
 
-    static void ExibirMenu(Pessoa pessoa)
+    static void ExibirMenu(Cliente cliente)
     {
-        var opcaoSelecionada = SelecionarOpcao(pessoa);
+        var opcaoSelecionada = SelecionarOpcao(cliente);
 
-        if (opcaoSelecionada == "3")
-            return;
+        if (opcaoSelecionada != "3")
+        {
+            Console.Clear();
+            Console.WriteLine("Digite o valor:");
+            var valor = float.Parse(Console.ReadLine());
 
-        Console.WriteLine(Constantes.Opcoes.Where(x => x.Key == opcaoSelecionada).First().Value);
+            cliente.Saldo = opcaoSelecionada == "1"
+                ? Calculo.Soma(cliente.Saldo, valor)
+                : Calculo.Subracao(cliente.Saldo, valor);
+
+            Console.WriteLine($"Saldo atual é {cliente.Saldo}\n");
+
+            ExibirMenu(cliente);
+        }
+
+        return;
     }
 
-    static string SelecionarOpcao(Pessoa pessoa)
+    static string SelecionarOpcao(Cliente cliente)
     {
         var opcaoSelecionada = "";
 
         while (!Constantes.Opcoes.ContainsKey(opcaoSelecionada))
         {
-            Console.Clear();
-            Console.WriteLine($"Como posso ajudar {pessoa.Nome}?");
+            Console.WriteLine($"Como posso ajudar {cliente.Nome}?");
 
             foreach (var opcao in Constantes.Opcoes)
                 Console.WriteLine($"{opcao.Key} - {opcao.Value}");
@@ -56,6 +71,7 @@ internal class Program
             Console.WriteLine("Selecione uma opção:");
 
             opcaoSelecionada = Console.ReadLine();
+            Console.Clear();
         }
 
         return opcaoSelecionada;
