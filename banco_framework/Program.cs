@@ -5,12 +5,31 @@ using Domain.Model;
 internal class Program
 {
     private static void Main(string[] args)
-    {
+    {   
+        Cliente cliente;
+
+        do
+        {
+            Console.Clear();
+            Console.WriteLine("Seja bem vindo ao banco Framework");
+            Console.WriteLine("Por favor, identifique-se");
+            Console.WriteLine("");
+
+            cliente = Identificacao();
+
+            if (cliente.Validacoes.Count > 0)
+            {
+                Console.WriteLine();
+
+                foreach (var validacao in cliente.Validacoes)
+                    Console.WriteLine(validacao);
+
+                Console.ReadKey();
+            }
+
+        } while (cliente.Validacoes.Count > 0);
+
         Console.Clear();
-        Console.WriteLine("Seja bem vindo ao banco Framework");
-        Console.WriteLine("Por favor, identifique-se");
-        Console.WriteLine("");
-        var cliente = Identificacao();
         ExibirMenu(cliente);
     }
 
@@ -19,17 +38,16 @@ internal class Program
         var cliente = new Cliente();
 
         Console.WriteLine("Seu número de identificação:");
-        cliente.Id = int.Parse(Console.ReadLine());
+        cliente.SetId(Console.ReadLine());
 
         Console.WriteLine("Seu nome:");
         cliente.Nome = Console.ReadLine();
 
         Console.WriteLine("Seu CPF:");
-        cliente.Cpf = Console.ReadLine();
+        cliente.SetCpf(Console.ReadLine());
 
         Console.WriteLine("Seu saldo:");
-        cliente.Saldo = float.Parse(Console.ReadLine());
-        Console.Clear();
+        cliente.SetSaldoInicial(Console.ReadLine());
 
         return cliente;
     }
@@ -44,9 +62,11 @@ internal class Program
             Console.WriteLine("Digite o valor:");
             var valor = float.Parse(Console.ReadLine());
 
-            cliente.Saldo = opcaoSelecionada == "1"
+            var saldoFinal = opcaoSelecionada == "1"
                 ? Calculo.Soma(cliente.Saldo, valor)
                 : Calculo.Subracao(cliente.Saldo, valor);
+
+            cliente.SetSaldo(saldoFinal);
 
             Console.WriteLine($"Saldo atual é {cliente.Saldo}\n");
 
