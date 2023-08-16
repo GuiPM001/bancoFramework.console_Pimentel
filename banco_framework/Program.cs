@@ -1,11 +1,19 @@
 ﻿using Application;
 using Domain;
 using Domain.Model;
+using Repository;
 
 internal class Program
 {
     private static void Main(string[] args)
-    {   
+    {
+        var cliente = Identificacao();
+
+        ExibirMenu(cliente);
+    }
+
+    private static Cliente Identificacao()
+    {
         Cliente cliente;
 
         do
@@ -15,30 +23,35 @@ internal class Program
             Console.WriteLine("Por favor, identifique-se");
             Console.WriteLine("");
 
-            cliente = Identificacao();
+            Console.WriteLine("Seu número de identificação:");
+            var id = Console.ReadLine();
 
-            if (cliente.Validacoes.Count > 0)
+            if (int.TryParse(id, out var idConvertido))
             {
-                Console.WriteLine();
+                var clienteExistente = ClienteRepository.ObterClientePeloId(idConvertido);
 
-                foreach (var validacao in cliente.Validacoes)
-                    Console.WriteLine(validacao);
-
-                Console.ReadKey();
+                if (clienteExistente != null)
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Nome: {clienteExistente.Nome}");
+                    Console.WriteLine($"CPF: {clienteExistente.NumeroCpf}");
+                    Console.WriteLine($"Saldo: {clienteExistente.Saldo}");
+                    Console.WriteLine();
+                    return clienteExistente;
+                }
             }
+
+            cliente = CadastrarNovoCliente(id);
 
         } while (cliente.Validacoes.Count > 0);
 
-        Console.Clear();
-        ExibirMenu(cliente);
+        return cliente;
     }
 
-    static Cliente Identificacao()
+    private static Cliente CadastrarNovoCliente(string id)
     {
         var cliente = new Cliente();
-
-        Console.WriteLine("Seu número de identificação:");
-        cliente.SetId(Console.ReadLine());
+        cliente.SetId(id);
 
         Console.WriteLine("Seu nome:");
         cliente.Nome = Console.ReadLine();
@@ -49,10 +62,25 @@ internal class Program
         Console.WriteLine("Seu saldo:");
         cliente.SetSaldoInicial(Console.ReadLine());
 
+        Console.Clear();
+
+        if (cliente.Validacoes.Count == 0)
+            ClienteRepository.SalvarCliente(cliente);
+
+        else
+        {
+            Console.WriteLine();
+
+            foreach (var validacao in cliente.Validacoes)
+                Console.WriteLine(validacao);
+
+            Console.ReadKey();
+        }
+
         return cliente;
     }
 
-    static void ExibirMenu(Cliente cliente)
+    private static void ExibirMenu(Cliente cliente)
     {
         var opcaoSelecionada = SelecionarOpcao(cliente);
 
@@ -67,6 +95,7 @@ internal class Program
                 : Calculo.Subracao(cliente.Saldo, valor);
 
             cliente.SetSaldo(saldoFinal);
+            ClienteRepository.AtualizarSaldo(cliente.Id, saldoFinal);
 
             Console.WriteLine($"Saldo atual é {cliente.Saldo}\n");
 
@@ -76,7 +105,7 @@ internal class Program
         return;
     }
 
-    static string SelecionarOpcao(Cliente cliente)
+    private static string SelecionarOpcao(Cliente cliente)
     {
         var opcaoSelecionada = "";
 
